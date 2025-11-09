@@ -17,11 +17,14 @@ var withIosPermissions = function (c, _) {
     });
 };
 /**
- * Adds the following to the `AndroidManifest.xml`: `<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />`
+ * Adds the following to the `AndroidManifest.xml`: `<uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />`
  */
 var withAndroidPermissions = function (config, props) {
-    var fineLocationPermission = props.fineLocationPermission === false ? [] : ['android.permission.ACCESS_FINE_LOCATION'];
-    return config_plugins_1.AndroidConfig.Permissions.withPermissions(config, fineLocationPermission);
+    var permissions = ['android.permission.NEARBY_WIFI_DEVICES'];
+    if (props.fineLocationPermission !== false) {
+        permissions.push('android.permission.ACCESS_FINE_LOCATION');
+    }
+    return config_plugins_1.AndroidConfig.Permissions.withPermissions(config, permissions);
 };
 var withWifi = function (config, props) {
     if (props === void 0) { props = {}; }

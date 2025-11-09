@@ -29,8 +29,15 @@ public final class PermissionUtils {
      * @throws InvalidParameterException if {@code context} is null
      */
     public static boolean isLocationPermissionGranted(@NonNull final Context context) throws InvalidParameterException {
-        return (!isMarshmallowOrLater()
-                || isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION));
+        if (!isMarshmallowOrLater()) {
+            return true;
+        }
+
+        if (isTiramisuOrLater()) {
+            return isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES);
+        }
+
+        return isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     /**
@@ -38,6 +45,10 @@ public final class PermissionUtils {
      */
     private static boolean isMarshmallowOrLater() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+    }
+
+    private static boolean isTiramisuOrLater() {
+        return Build.VERSION.SDK_INT >= 33;
     }
 
     /**
@@ -51,4 +62,11 @@ public final class PermissionUtils {
     private static boolean isPermissionGranted(@NonNull final Context context, @NonNull final String permission) {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
+}
+
+final class PermissionStrings {
+    private PermissionStrings() {
+    }
+
+    static final String NEARBY_WIFI_DEVICES = "android.permission.NEARBY_WIFI_DEVICES";
 }

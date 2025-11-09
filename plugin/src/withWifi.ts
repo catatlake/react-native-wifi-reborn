@@ -28,12 +28,16 @@ const withIosPermissions: ConfigPlugin<Props> = (c, _) => {
 };
 
 /**
- * Adds the following to the `AndroidManifest.xml`: `<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />`
+ * Adds the following to the `AndroidManifest.xml`: `<uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />`
  */
 const withAndroidPermissions: ConfigPlugin<Props> = (config, props) => {
-    const fineLocationPermission =
-        props.fineLocationPermission === false ? [] : ['android.permission.ACCESS_FINE_LOCATION'];
-    return AndroidConfig.Permissions.withPermissions(config, fineLocationPermission);
+    const permissions = ['android.permission.NEARBY_WIFI_DEVICES'];
+
+    if (props.fineLocationPermission !== false) {
+        permissions.push('android.permission.ACCESS_FINE_LOCATION');
+    }
+
+    return AndroidConfig.Permissions.withPermissions(config, permissions);
 };
 
 const withWifi: ConfigPlugin<Props> = (config, props = {}) => {
