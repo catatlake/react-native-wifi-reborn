@@ -501,7 +501,7 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
     private void removeWifiNetwork(final String SSID, final Promise promise, final Runnable onSuccess, final int timeout) {
         final boolean locationPermissionGranted = PermissionUtils.isLocationPermissionGranted(context);
         if (!locationPermissionGranted) {
-            promise.reject(IsRemoveWifiNetworkErrorCodes.locationPermissionMissing.toString(), "Location permission (ACCESS_FINE_LOCATION) is not granted");
+            promise.reject(IsRemoveWifiNetworkErrorCodes.locationPermissionMissing.toString(), getWifiPermissionMissingMessage());
             return;
         }
 
@@ -786,16 +786,30 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
     private boolean assertLocationPermissionGranted(final Promise promise) {
         final boolean locationPermissionGranted = PermissionUtils.isLocationPermissionGranted(context);
         if (!locationPermissionGranted) {
-            promise.reject(ConnectErrorCodes.locationPermissionMissing.toString(), "Location permission (ACCESS_FINE_LOCATION) is not granted");
+            promise.reject(ConnectErrorCodes.locationPermissionMissing.toString(), getWifiPermissionMissingMessage());
             return false;
         }
 
-        final boolean isLocationOn = LocationUtils.isLocationOn(context);
-        if (!isLocationOn) {
-            promise.reject(ConnectErrorCodes.locationServicesOff.toString(), "Location service is turned off");
-            return false;
+        if (requiresLocationServices()) {
+            final boolean isLocationOn = LocationUtils.isLocationOn(context);
+            if (!isLocationOn) {
+                promise.reject(ConnectErrorCodes.locationServicesOff.toString(), "Location service is turned off");
+                return false;
+            }
         }
 
         return true;
+    }
+
+    private boolean requiresLocationServices() {
+        return Build.VERSION.SDK_INT < 33;
+    }
+
+    private String getWifiPermissionMissingMessage() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            return "Nearby Wi-Fi permission (NEARBY_WIFI_DEVICES) is not granted";
+        }
+
+        return "Location permission (ACCESS_FINE_LOCATION) is not granted";
     }
 }

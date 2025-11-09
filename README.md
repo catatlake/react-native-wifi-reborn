@@ -33,29 +33,59 @@ You need put "Privacy - Location When In Use Usage Description" or "Privacy - Lo
 
 ### 🟢Android requirements
 
-#### `ACCESS_FINE_LOCATION` permission
+#### Wi-Fi permissions
 
-Since [Android 6](https://developer.android.com/about/versions/marshmallow), you must request the [`ACCESS_FINE_LOCATION`](https://developer.android.com/reference/android/Manifest.permission#ACCESS_FINE_LOCATION) permission at runtime to use the device's Wi-Fi scanning and managing capabilities. In order to accomplish this, you can use the [PermissionsAndroid API](https://reactnative.dev/docs/permissionsandroid) or [React Native Permissions](https://github.com/react-native-community/react-native-permissions).
+##### Android 13 (API 33) and newer
+
+Starting with [Android 13](https://developer.android.com/about/versions/13/features/nearby-wifi-devices), Wi-Fi scans and connections require the [`NEARBY_WIFI_DEVICES`](https://developer.android.com/reference/android/Manifest.permission#NEARBY_WIFI_DEVICES) runtime permission instead of location access. This permission is part of the Nearby Devices group and does **not** require location services to be enabled.
+
+Example request:
+
+```javascript
+import { PermissionsAndroid, Platform } from 'react-native';
+
+if (Platform.OS === 'android' && Platform.Version >= 33) {
+  const result = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.NEARBY_WIFI_DEVICES,
+    {
+      title: 'Nearby Wi-Fi permission is required for WiFi connections',
+      message:
+        'This app needs nearby Wi-Fi permission to scan and connect to networks.',
+      buttonNegative: 'DENY',
+      buttonPositive: 'ALLOW',
+    },
+  );
+
+  if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+    // Permission denied
+  }
+}
+```
+
+##### Android 6 (API 23) – Android 12L (API 32)
+
+For devices running Android 6 through Android 12L you must request the [`ACCESS_FINE_LOCATION`](https://developer.android.com/reference/android/Manifest.permission#ACCESS_FINE_LOCATION) permission at runtime and ensure that location services are enabled. You can use the [PermissionsAndroid API](https://reactnative.dev/docs/permissionsandroid) or [React Native Permissions](https://github.com/react-native-community/react-native-permissions) for this purpose.
 
 Example:
-```javascript
-import { PermissionsAndroid } from 'react-native';
 
-const granted = await PermissionsAndroid.request(
-  PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  {
-    title: 'Location permission is required for WiFi connections',
-    message:
-      'This app needs location permission as this is required  ' +
-      'to scan for wifi networks.',
-    buttonNegative: 'DENY',
-    buttonPositive: 'ALLOW',
-  },
-);
-if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  // You can now use react-native-wifi-reborn
-} else {
-  // Permission denied
+```javascript
+import { PermissionsAndroid, Platform } from 'react-native';
+
+if (Platform.OS === 'android' && Platform.Version < 33) {
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    {
+      title: 'Location permission is required for WiFi connections',
+      message:
+        'This app needs location permission as this is required  ' +
+        'to scan for wifi networks.',
+      buttonNegative: 'DENY',
+      buttonPositive: 'ALLOW',
+    },
+  );
+  if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+    // Permission denied
+  }
 }
 ```
 
@@ -121,7 +151,7 @@ Next, rebuild your app as described in the ["Adding custom native code"](https:/
 
 ### Props
 
-The plugin provides props for extra customization. Every time you change the props or plugins, you'll need to rebuild (and `prebuild`) the native app. If no extra properties are added, defaults will be used.
+The plugin provides props for extra customization. Every time you change the props or plugins, you'll need to rebuild (and `prebuild`) the native app. If no extra properties are added, defaults will be used. The Android config plugin always adds the `android.permission.NEARBY_WIFI_DEVICES` permission and, unless disabled, it will also add `android.permission.ACCESS_FINE_LOCATION` for backwards compatibility.
 
 - `fineLocationPermission` (_false | undefined_): When `false`, the `android.permission.ACCESS_FINE_LOCATION` will not be added to the `AndroidManifest.xml`.
 
