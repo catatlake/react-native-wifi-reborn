@@ -34,6 +34,11 @@ public final class PermissionUtils {
         }
 
         if (isTiramisuOrLater()) {
+            if (context.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.TIRAMISU) {
+                return isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                    || isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES);
+            }
+
             return isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES);
         }
 
