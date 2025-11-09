@@ -660,7 +660,10 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
                 joinedNetwork = network;
                 DisconnectCallbackHolder.getInstance().bindProcessToNetwork(network);
                 //connectivityManager.setNetworkPreference(ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
-                if (!pollForValidSSID(3, SSID)) {
+                // Android 13+ no longer requires ACCESS_FINE_LOCATION for Wi-Fi operations when
+                // NEARBY_WIFI_DEVICES is granted. Polling for the SSID would still rely on the
+                // location permission, so skip the check on newer platforms and trust the callback.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && !pollForValidSSID(3, SSID)) {
                     promise.reject(ConnectErrorCodes.android10ImmediatelyDroppedConnection.toString(), "Firmware bugs on OnePlus prevent it from connecting on some firmware versions.");
                     return;
                 }

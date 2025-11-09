@@ -21,11 +21,15 @@ public final class PermissionUtils {
     }
 
     /**
-     * Determine whether  the location permission has been granted (ACCESS_COARSE_LOCATION or
-     * ACCESS_FINE_LOCATION). Below Android M, will always return true.
+     * Determine whether the app has been granted a Wi-Fi related runtime permission.
+     * <p>
+     * Android 13 introduced {@code NEARBY_WIFI_DEVICES} to replace fine location for Wi-Fi
+     * operations. Devices running Android 13+ report success when the nearby Wi-Fi permission is
+     * granted. On earlier versions a granted {@code ACCESS_FINE_LOCATION} permission is required.
+     * Below Android M, runtime permissions do not apply and this method always returns {@code true}.
      *
      * @param context to determine with if the permission is granted
-     * @return true if you have any location permission or the sdk is below Android M.
+     * @return true if the required Wi-Fi permission is granted or the sdk is below Android M.
      * @throws InvalidParameterException if {@code context} is null
      */
     public static boolean isLocationPermissionGranted(@NonNull final Context context) throws InvalidParameterException {
@@ -34,12 +38,15 @@ public final class PermissionUtils {
         }
 
         if (isTiramisuOrLater()) {
-            if (context.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.TIRAMISU) {
-                return isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                    || isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES);
+            if (isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES)) {
+                return true;
             }
 
-            return isPermissionGranted(context, PermissionStrings.NEARBY_WIFI_DEVICES);
+            if (context.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.TIRAMISU) {
+                return isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+
+            return false;
         }
 
         return isPermissionGranted(context, Manifest.permission.ACCESS_FINE_LOCATION);
